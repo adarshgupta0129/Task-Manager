@@ -1,0 +1,77 @@
+<div class="task-list-container">
+  <div class="page-header">
+    <h2>Task Management</h2>
+    <p>Manage and track your team's tasks</p>
+  </div>
+
+  <div class="tasks-grid" *ngIf="tasks.length > 0; else noTasks">
+    <div class="task-card" *ngFor="let task of tasks" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
+      <div class="task-header">
+        <h3 class="task-title">{{ task.title }}</h3>
+        <div class="task-status" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
+          {{ task.status }}
+        </div>
+      </div>
+      
+      <p class="task-description">{{ task.description }}</p>
+      
+      <div class="task-meta">
+        <div class="meta-item">
+          <span class="meta-label">Assignee:</span>
+          <span class="meta-value">{{ task.assignee }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Due Date:</span>
+          <span class="meta-value" [class.overdue]="isOverdue(task.dueDate)">
+            {{ formatDate(task.dueDate) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="task-actions">
+        <div class="status-update">
+          <label for="status-{{ task._id }}">Update Status:</label>
+          <select 
+            id="status-{{ task._id }}"
+            [value]="task.status" 
+            (change)="updateTaskStatus(task._id!, $event)"
+            class="status-select"
+          >
+            <option value="Not started">Not started</option>
+            <option value="In progress">In progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn btn-primary" (click)="openTaskLog(task)">
+            📊 Task Log
+          </button>
+          <button class="btn btn-danger" (click)="deleteTask(task._id!)">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noTasks>
+    <div class="no-tasks">
+      <div class="no-tasks-icon">📝</div>
+      <h3>No tasks found</h3>
+      <p>Create your first task to get started</p>
+      <a routerLink="/task-entry" class="btn btn-primary">Create Task</a>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Task Log Modal -->
+<div class="modal-overlay" *ngIf="selectedTask" (click)="closeTaskLog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <app-task-log 
+      [task]="selectedTask" 
+      (close)="closeTaskLog()"
+      (logAdded)="onLogAdded()">
+    </app-task-log>
+  </div>
+</div>

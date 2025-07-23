@@ -1,0 +1,268 @@
+.task-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-header p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.task-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  border-left: 4px solid #e5e7eb;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.task-card.status-not-started {
+  border-left-color: #6b7280;
+}
+
+.task-card.status-in-progress {
+  border-left-color: #f59e0b;
+}
+
+.task-card.status-completed {
+  border-left-color: #10b981;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.task-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.task-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.task-status.status-not-started {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.task-status.status-in-progress {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.task-status.status-completed {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.task-description {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.task-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.meta-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.meta-value {
+  color: #6b7280;
+}
+
+.meta-value.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.task-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-update {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-update label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.status-select {
+  padding: 0.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.875rem;
+  transition: border-color 0.3s ease;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  color: white;
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.no-tasks {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.no-tasks-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.no-tasks h3 {
+  color: #374151;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.no-tasks p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .task-card {
+    margin: 0 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}

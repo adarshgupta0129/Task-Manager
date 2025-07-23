@@ -1,0 +1,98 @@
+<div class="task-entry-container">
+  <div class="page-header">
+    <h2>Create New Task</h2>
+    <p>Add a new task for your team members</p>
+  </div>
+
+  <div class="form-card">
+    <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="task-form">
+      <div class="form-group">
+        <label for="title">Task Title *</label>
+        <input
+          type="text"
+          id="title"
+          formControlName="title"
+          placeholder="Enter task title"
+          class="form-input"
+          [class.error]="taskForm.get('title')?.invalid && taskForm.get('title')?.touched"
+        >
+        <div class="error-message" *ngIf="taskForm.get('title')?.invalid && taskForm.get('title')?.touched">
+          Task title is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Enter task description"
+          rows="4"
+          class="form-textarea"
+          [class.error]="taskForm.get('description')?.invalid && taskForm.get('description')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="taskForm.get('description')?.invalid && taskForm.get('description')?.touched">
+          Task description is required
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dueDate">Due Date *</label>
+          <input
+            type="date"
+            id="dueDate"
+            formControlName="dueDate"
+            class="form-input"
+            [class.error]="taskForm.get('dueDate')?.invalid && taskForm.get('dueDate')?.touched"
+          >
+          <div class="error-message" *ngIf="taskForm.get('dueDate')?.invalid && taskForm.get('dueDate')?.touched">
+            Due date is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" formControlName="status" class="form-select">
+            <option value="Not started">Not started</option>
+            <option value="In progress">In progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="assignee">Assignee *</label>
+        <select
+          id="assignee"
+          formControlName="assignee"
+          class="form-select"
+          [class.error]="taskForm.get('assignee')?.invalid && taskForm.get('assignee')?.touched"
+        >
+          <option value="">Select team member</option>
+          <option *ngFor="let member of teamMembers" [value]="member">{{ member }}</option>
+        </select>
+        <div class="error-message" *ngIf="taskForm.get('assignee')?.invalid && taskForm.get('assignee')?.touched">
+          Please select an assignee
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="resetForm()">
+          Reset
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="taskForm.invalid || isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner"></span>
+          {{ isSubmitting ? 'Creating...' : 'Create Task' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="success-message" *ngIf="showSuccessMessage">
+    <div class="success-content">
+      <span class="success-icon">✅</span>
+      <span>Task created successfully!</span>
+    </div>
+  </div>
+</div>
