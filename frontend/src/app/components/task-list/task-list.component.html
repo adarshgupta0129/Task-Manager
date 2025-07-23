@@ -4,8 +4,32 @@
     <p>Manage and track your team's tasks</p>
   </div>
 
-  <div class="tasks-grid" *ngIf="tasks.length > 0; else noTasks">
-    <div class="task-card" *ngFor="let task of tasks" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
+  <!-- Filter Controls -->
+  <div class="filter-controls">
+    <div class="filter-group">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onStatusFilterChange(statusFilter)">
+        <option value="">All Statuses</option>
+        <option value="Not started">Not started</option>
+        <option value="In progress">In progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="assigneeFilter">Assignee:</label>
+      <select id="assigneeFilter" [(ngModel)]="assigneeFilter" (change)="onAssigneeFilterChange(assigneeFilter)">
+        <option value="">All Assignees</option>
+        <option *ngFor="let assignee of uniqueAssignees" [value]="assignee">{{assignee}}</option>
+      </select>
+    </div>
+
+    <button class="btn btn-secondary" (click)="clearFilters()">Clear Filters</button>
+  </div>
+
+  <!-- Task Grid -->
+  <div class="tasks-grid" *ngIf="filteredTasks.length > 0; else noTasks">
+    <div class="task-card" *ngFor="let task of filteredTasks" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
       <div class="task-header">
         <h3 class="task-title">{{ task.title }}</h3>
         <div class="task-status" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
@@ -55,14 +79,21 @@
     </div>
   </div>
 
+  <!-- No Tasks Template -->
   <ng-template #noTasks>
     <div class="no-tasks">
       <div class="no-tasks-icon">📝</div>
       <h3>No tasks found</h3>
-      <p>Create your first task to get started</p>
+      <p *ngIf="statusFilter || assigneeFilter">
+        No tasks match your current filters. Try adjusting your filters or
+        <a href="javascript:void(0)" (click)="clearFilters()">clear all filters</a>.
+      </p>
+      <p *ngIf="!statusFilter && !assigneeFilter">
+        Create your first task to get started
+      </p>
       <a routerLink="/task-entry" class="btn btn-primary">Create Task</a>
     </div>
-  </ng-template>
+  </ng-template> 
 </div>
 
 <!-- Task Log Modal -->
