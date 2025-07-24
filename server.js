@@ -54,6 +54,11 @@ const TaskLog = mongoose.model('TaskLog', taskLogSchema);
 
 // Routes
 
+// Health
+app.get('/api/team-members', (req, res) => {
+  res.status(200).json({ message: 'System is up!' });
+});
+
 // Get all tasks with optional filter for deleted records
 app.get('/api/tasks', async (req, res) => {
   try {

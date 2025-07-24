@@ -28,7 +28,7 @@ export interface TaskLog {
   providedIn: "root",
 })
 export class TaskService {
-  private apiUrl = "http://localhost:1000/api";
+  private apiUrl = "https://task-manager-j9aw.onrender.com/api";
 
   constructor(private http: HttpClient) {}
 
