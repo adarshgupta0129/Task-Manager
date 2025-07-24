@@ -9,10 +9,12 @@
     <div class="filter-group">
       <label for="statusFilter">Status:</label>
       <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onStatusFilterChange(statusFilter)">
-        <option value="">All Statuses</option>
+        <option value="">All Active Tasks</option>
         <option value="Not started">Not started</option>
         <option value="In progress">In progress</option>
         <option value="Completed">Completed</option>
+        <option value="deleted">Deleted Records</option>
+        <option value="all">All Records</option>
       </select>
     </div>
 
@@ -32,12 +34,31 @@
     <div class="task-card" *ngFor="let task of filteredTasks" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
       <div class="task-header">
         <h3 class="task-title">{{ task.title }}</h3>
-        <div class="task-status" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
-          {{ task.status }}
+        <div class="task-status-container">
+          <div class="task-status" [class]="'status-' + task.status.toLowerCase().replace(' ', '-')">
+            {{ task.status }}
+          </div>
+          <div class="deleted-badge" *ngIf="!task.active">
+            🗑️ DELETED
+          </div>
         </div>
       </div>
       
       <p class="task-description">{{ task.description }}</p>
+      
+      <!-- Progress Display -->
+      <div class="progress-section" *ngIf="getTaskProgress(task._id!) !== null">
+        <div class="progress-label">Progress</div>
+        <div class="progress-display">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [style.width.%]="getTaskProgress(task._id!)"
+            ></div>
+          </div>
+          <span class="progress-text">{{ getTaskProgress(task._id!) }}%</span>
+        </div>
+      </div>
       
       <div class="task-meta">
         <div class="meta-item">
@@ -50,29 +71,31 @@
             {{ formatDate(task.dueDate) }}
           </span>
         </div>
+        <div class="meta-item" *ngIf="!task.active && task.deletedAt">
+          <span class="meta-label">Deleted On:</span>
+          <span class="meta-value deleted-date">{{ formatDate(task.deletedAt) }}</span>
+        </div>
       </div>
       
       <div class="task-actions">
-        <div class="status-update">
-          <label for="status-{{ task._id }}">Update Status:</label>
-          <select 
-            id="status-{{ task._id }}"
-            [value]="task.status" 
-            (change)="updateTaskStatus(task._id!, $event)"
-            class="status-select"
-          >
-            <option value="Not started">Not started</option>
-            <option value="In progress">In progress</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-        
-        <div class="action-buttons">
+        <div class="action-buttons" *ngIf="task.active">
           <button class="btn btn-primary" (click)="openTaskLog(task)">
             📊 Task Log
           </button>
+          <button class="btn btn-warning" (click)="editTask(task)">
+            ✏️ Edit
+          </button>
           <button class="btn btn-danger" (click)="deleteTask(task._id!)">
             🗑️ Delete
+          </button>
+        </div>
+
+        <div class="action-buttons" *ngIf="!task.active">
+          <button class="btn btn-success" (click)="restoreTask(task._id!)">
+            🔄 Restore
+          </button>
+          <button class="btn btn-danger-permanent" (click)="permanentDeleteTask(task._id!)">
+            ❌ Delete Forever
           </button>
         </div>
       </div>
@@ -97,12 +120,75 @@
 </div>
 
 <!-- Task Log Modal -->
-<div class="modal-overlay" *ngIf="selectedTask" (click)="closeTaskLog()">
+<div class="modal-overlay" *ngIf="selectedTask && showLogModal" (click)="closeTaskLog()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <app-task-log 
       [task]="selectedTask" 
       (close)="closeTaskLog()"
       (logAdded)="onLogAdded()">
     </app-task-log>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal-overlay" *ngIf="selectedTask && showEditModal" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="edit-task-container">
+      <div class="edit-header">
+        <h3>Edit Task: {{ selectedTask.title }}</h3>
+        <button class="close-btn" (click)="closeEditModal()">✕</button>
+      </div>
+      
+      <form [formGroup]="editForm" (ngSubmit)="updateTask()" class="edit-form">
+        <div class="form-group">
+          <label for="editAssignee">Assignee *</label>
+          <select
+            id="editAssignee"
+            formControlName="assignee"
+            class="form-select"
+            [class.error]="editForm.get('assignee')?.invalid && editForm.get('assignee')?.touched"
+          >
+            <option value="">Select team member</option>
+            <option *ngFor="let member of teamMembers" [value]="member">{{ member }}</option>
+          </select>
+          <div class="error-message" *ngIf="editForm.get('assignee')?.invalid && editForm.get('assignee')?.touched">
+            Please select an assignee
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editStatus">Status</label>
+          <select id="editStatus" formControlName="status" class="form-select">
+            <option value="Not started">Not started</option>
+            <option value="In progress">In progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editDueDate">Due Date *</label>
+          <input
+            type="date"
+            id="editDueDate"
+            formControlName="dueDate"
+            class="form-input"
+            [class.error]="editForm.get('dueDate')?.invalid && editForm.get('dueDate')?.touched"
+          >
+          <div class="error-message" *ngIf="editForm.get('dueDate')?.invalid && editForm.get('dueDate')?.touched">
+            Due date is required
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner"></span>
+            {{ isUpdating ? 'Updating...' : 'Update Task' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

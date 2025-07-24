@@ -10,6 +10,7 @@ export interface Task {
   status: "Not started" | "In progress" | "Completed";
   assignee: string;
   active?: boolean;
+  deletedAt?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -32,8 +33,12 @@ export class TaskService {
   constructor(private http: HttpClient) {}
 
   // Task operations
-  getTasks(): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/tasks`);
+  getTasks(includeDeleted?: string): Observable<Task[]> {
+    let url = `${this.apiUrl}/tasks`;
+    if (includeDeleted) {
+      url += `?includeDeleted=${includeDeleted}`;
+    }
+    return this.http.get<Task[]>(url);
   }
 
   createTask(task: Task): Observable<Task> {
@@ -46,6 +51,14 @@ export class TaskService {
 
   deleteTask(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/tasks/${id}`);
+  }
+
+  restoreTask(id: string): Observable<Task> {
+    return this.http.put<Task>(`${this.apiUrl}/tasks/${id}/restore`, {});
+  }
+
+  permanentDeleteTask(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/tasks/${id}/permanent`);
   }
 
   // Task log operations

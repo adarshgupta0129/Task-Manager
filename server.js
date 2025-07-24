@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 1000;
 
 // Middleware
 app.use(cors());
@@ -36,6 +36,7 @@ const taskSchema = new mongoose.Schema({
   },
   assignee: { type: String, required: true },
   active: { type: Boolean, default: true },
+  deletedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -53,12 +54,31 @@ const TaskLog = mongoose.model('TaskLog', taskLogSchema);
 
 // Routes
 
-// Get all tasks
+// Get all tasks with optional filter for deleted records
 app.get('/api/tasks', async (req, res) => {
   try {
-    const tasks = await Task.find({ active: true }).sort({ createdAt: -1 });
+    const { includeDeleted } = req.query;
+    let filter = {};
+    
+    if (includeDeleted === 'true') {
+      // Show only deleted records (where active is false)
+      filter = { active: false };
+    } else if (includeDeleted === 'all') {
+      // Show all records (active and deleted) - no filter needed
+      filter = {};
+    } else {
+      // Default: show only active records (where active is true)
+      filter = { active: true };
+    }
+    
+    console.log('Filter applied:', filter); // Debug log
+    const tasks = await Task.find(filter).sort({ createdAt: -1 });
+    console.log('Tasks found:', tasks.length); // Debug log
+    console.log('Sample task active status:', tasks.length > 0 ? tasks[0].active : 'No tasks'); // Debug log
+    
     res.json(tasks);
   } catch (error) {
+    console.error('Error in /api/tasks:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -91,8 +111,59 @@ app.put('/api/tasks/:id', async (req, res) => {
 // Delete task (soft delete)
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
-    await Task.findByIdAndUpdate(req.params.id, { active: false });
-    res.json({ message: 'Task deleted successfully' });
+    console.log('Soft deleting task with ID:', req.params.id); // Debug log
+    
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.params.id, 
+      { 
+        active: false,
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      },
+      { new: true } // Return the updated document
+    );
+    
+    console.log('Task after soft delete:', updatedTask); // Debug log
+    
+    if (!updatedTask) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    res.json({ 
+      message: 'Task deleted successfully',
+      deletedTask: updatedTask
+    });
+  } catch (error) {
+    console.error('Error in soft delete:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Restore deleted task
+app.put('/api/tasks/:id/restore', async (req, res) => {
+  try {
+    const restoredTask = await Task.findByIdAndUpdate(
+      req.params.id,
+      { 
+        active: true,
+        deletedAt: null,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+    res.json(restoredTask);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Permanently delete task
+app.delete('/api/tasks/:id/permanent', async (req, res) => {
+  try {
+    await Task.findByIdAndDelete(req.params.id);
+    // Also delete associated logs
+    await TaskLog.deleteMany({ taskId: req.params.id });
+    res.json({ message: 'Task permanently deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -134,7 +205,29 @@ app.get('/api/team-members', (req, res) => {
   res.json(teamMembers);
 });
 
- connectDB();
+// Debug route to check all tasks and their active status
+app.get('/api/debug/tasks', async (req, res) => {
+  try {
+    const allTasks = await Task.find({}).sort({ createdAt: -1 });
+    const summary = {
+      total: allTasks.length,
+      active: allTasks.filter(t => t.active === true).length,
+      deleted: allTasks.filter(t => t.active === false).length,
+      tasks: allTasks.map(t => ({
+        _id: t._id,
+        title: t.title,
+        active: t.active,
+        deletedAt: t.deletedAt,
+        createdAt: t.createdAt
+      }))
+    };
+    res.json(summary);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
