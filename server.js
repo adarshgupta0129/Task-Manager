@@ -55,7 +55,7 @@ const TaskLog = mongoose.model('TaskLog', taskLogSchema);
 // Routes
 
 // Health
-app.get('/api/team-members', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({ message: 'System is up!' });
 });
 
