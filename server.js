@@ -76,10 +76,7 @@ app.get('/api/tasks', async (req, res) => {
       filter = { active: true };
     }
     
-    console.log('Filter applied:', filter); // Debug log
     const tasks = await Task.find(filter).sort({ createdAt: -1 });
-    console.log('Tasks found:', tasks.length); // Debug log
-    console.log('Sample task active status:', tasks.length > 0 ? tasks[0].active : 'No tasks'); // Debug log
     
     res.json(tasks);
   } catch (error) {
@@ -232,7 +229,7 @@ app.get('/api/debug/tasks', async (req, res) => {
   }
 });
 
-connectDB();
+connectDB(); 
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
